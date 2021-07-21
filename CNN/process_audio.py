@@ -5,11 +5,11 @@ import math
 import matplotlib.pyplot as plt
 import librosa, librosa.display
 
-DATASET_PATH = "Sorted_114/warblr"
+DATASET_PATH = "Mixed_1140"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "warblr_1_segment.json"
+JSON_PATH = "mixed_1140_1_segment.json"
 
 def save_log_mel_spectrogram(dataset_path, json_path, n_mels=256, n_fft=2048, hop_length=512, num_segments=5):
 
