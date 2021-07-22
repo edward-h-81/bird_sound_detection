@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
 
-DATA_PATH = "mixed_114_1_segment.json"
+DATA_PATH = "mixed_114_1_segments.json"
 
 def load_data(data_path):
 
@@ -70,8 +70,19 @@ def predict(model, X, y):
 
     # extract index with max value
     predicted_index = np.argmax(prediction, axis=1)
-    #could map the index onto a label
-    print("Expected index: {}, Predicted index: {}".format(y, predicted_index))
+    dataLabel = ""
+    myPrediction = ""
+    if y == 0:
+        dataLabel = "BIRD!"
+    else:
+        dataLabel = "NO BIRD!"
+
+    if predicted_index == 0:
+        myPrediction = "BIRD?"
+    else:
+        myPrediction = "NO BIRD?"
+
+    print("Predicted: {}, Expected: {}".format(myPrediction, dataLabel))
 
 
 if __name__ == "__main__":
@@ -95,7 +106,11 @@ if __name__ == "__main__":
     test_error, test_accuracy = model.evaluate(X_test, y_test, verbose=1)
     print("Accuracy on test set is: {}".format(test_accuracy))
 
+    index = 0
     # make prediction on a sample
-    X = X_test[10]
-    y = y_test[10]
-    predict(model, X, y)
+    while index < len(X_test):
+        X = X_test[index]
+        y = y_test[index]
+        print("Sample: {}".format(index+1))
+        predict(model, X, y)
+        index += 1

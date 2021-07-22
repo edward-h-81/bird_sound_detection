@@ -2,16 +2,17 @@ import json
 import os
 import librosa
 import math
-import matplotlib.pyplot as plt
-import librosa, librosa.display
+# import matplotlib.pyplot as plt
+# import librosa, librosa.display
+
 
 DATASET_PATH = "Mixed_1140"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "mixed_1140_1_segment.json"
+JSON_PATH = "mixed_1140_1_segment_128_mels.json"
 
-def save_log_mel_spectrogram(dataset_path, json_path, n_mels=256, n_fft=2048, hop_length=512, num_segments=5):
+def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, hop_length=512, num_segments=5):
 
     # dictionary to store data
     data = {
@@ -19,6 +20,7 @@ def save_log_mel_spectrogram(dataset_path, json_path, n_mels=256, n_fft=2048, ho
         "log mel spectrogram": [],
         "labels": []
     }
+    # maybe create a wav file mapping?
 
     num_samples_per_segment = int(SAMPLES_PER_TRACK / num_segments)
     expected_num_log_mel_spectrogram_vectors_per_segment = math.ceil(num_samples_per_segment / hop_length) # ceil rounds up e.g., 1.2 -> 2
@@ -60,7 +62,6 @@ def save_log_mel_spectrogram(dataset_path, json_path, n_mels=256, n_fft=2048, ho
                     #                          y_axis="mel",
                     #                          sr=sr, cmap='gray_r')  # cmap='gray' OR cmap='gray_r' - add for grayscale
                     # plt.colorbar(format="%+2.f dB")
-                    # plt.title("Bird sound present")
                     # plt.show()
 
                     log_mel_spectrogram = log_mel_spectrogram.T
