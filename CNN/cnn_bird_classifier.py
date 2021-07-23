@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
 
-DATA_PATH = "mixed_114_1_segments.json"
+DATA_PATH = "mixed_114_32mels_filenames.json"
 
 def load_data(data_path):
 
@@ -12,25 +12,37 @@ def load_data(data_path):
 
     X = np.array(data["log mel spectrogram"])
     y = np.array(data["labels"])
-    return X, y
+    z = np.array(data["filenames"])
+    return X, y, z
 
 def prepare_datasets(test_size, validation_size):
 
     # load data
-    X, y = load_data(DATA_PATH)
+    X, y, z = load_data(DATA_PATH)
 
     # create the train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_test, y_train, y_test, z_train, z_test = train_test_split(X, y, z, test_size=test_size)
+    print(len(X_train))
+    print(len(X_test))
+    print(len(y_train))
+    print(len(y_test))
+    print(len(z_train))
+    print(len(z_test))
 
     # create the train/validation split
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
+    print()
+    print(len(X_train))
+    print(len(X_validation))
+    print(len(y_train))
+    print(len(y_validation))
 
     # TF expects a 3D array -> (# time bins, # mel bands, # colours)
     X_train = X_train[..., np.newaxis] # 4D array -> (# segments, # time bins, # mel bands, # colours)
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
 
-    return X_train, X_validation, X_test, y_train, y_validation, y_test
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, z_train, z_test
 
 def build_model(input_shape):
 
@@ -62,7 +74,7 @@ def build_model(input_shape):
 
     return model
 
-def predict(model, X, y):
+def predict(model, X, y, z):
 
     X = X[np.newaxis, ...]
 
@@ -82,12 +94,12 @@ def predict(model, X, y):
     else:
         myPrediction = "NO BIRD?"
 
-    print("Predicted: {}, Expected: {}".format(myPrediction, dataLabel))
+    print("Predicted: {}, Expected: {}, File: {}".format(myPrediction, dataLabel, z))
 
 
 if __name__ == "__main__":
     # create training, validation and test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test = prepare_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, z_train, z_test = prepare_datasets(0.25, 0.2)
 
     # build the CNN
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
@@ -111,6 +123,7 @@ if __name__ == "__main__":
     while index < len(X_test):
         X = X_test[index]
         y = y_test[index]
+        z = z_test[index]
         print("Sample: {}".format(index+1))
-        predict(model, X, y)
+        predict(model, X, y, z)
         index += 1

@@ -6,19 +6,20 @@ import math
 # import librosa, librosa.display
 
 
-DATASET_PATH = "Mixed_1140"
+DATASET_PATH = "Mixed_114"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "mixed_1140_1_segment_128_mels.json"
+JSON_PATH = "mixed_114_32mels_filenames.json"
 
-def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, hop_length=512, num_segments=5):
+def save_log_mel_spectrogram(dataset_path, json_path, n_mels=32, n_fft=2048, hop_length=512, num_segments=5):
 
     # dictionary to store data
     data = {
         "mapping": [],
         "log mel spectrogram": [],
-        "labels": []
+        "labels": [],
+        "filenames": []
     }
     # maybe create a wav file mapping?
 
@@ -70,6 +71,7 @@ def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, ho
                     if len(log_mel_spectrogram) == expected_num_log_mel_spectrogram_vectors_per_segment:
                         data["log mel spectrogram"].append(log_mel_spectrogram.tolist())
                         data["labels"].append(i-1) # -1 as the first iteration was for the dataset path
+                        data["filenames"].append(f)
                         print("{}, segment:{}".format(file_path, s+1))
 
     with open(json_path, "w") as fp:
