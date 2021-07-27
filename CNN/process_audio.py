@@ -6,11 +6,11 @@ import math
 # import librosa, librosa.display
 
 
-DATASET_PATH = "Mixed_114"
+DATASET_PATH = "Hold-out_warblr_114/train_val"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "mixed_1140_32mels_filenames.json"
+JSON_PATH = "hold-out_warblr_train_val_114_32mels_filenames.json"
 
 def save_log_mel_spectrogram(dataset_path, json_path, n_mels=32, n_fft=2048, hop_length=512, num_segments=5):
 

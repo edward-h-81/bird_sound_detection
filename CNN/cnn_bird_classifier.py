@@ -2,47 +2,46 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
+from sklearn.utils import shuffle
 
-DATA_PATH = "mixed_114_32mels_filenames.json"
+DATA_PATH_TRAIN_VAL = "hold-out_warblr_train_val_114_32mels_filenames.json"
+DATA_PATH_TEST = "hold-out_warblr_test_114_32mels_filenames.json"
 
-def load_data(data_path):
+def load_data(data_path_train_val, data_path_test):
 
-    with open(data_path, "r") as fp:
+    with open(data_path_train_val, "r") as fp:
         data = json.load(fp)
 
     X = np.array(data["log mel spectrogram"])
     y = np.array(data["labels"])
-    z = np.array(data["filenames"])
-    return X, y, z
 
-def prepare_datasets(test_size, validation_size):
+    with open(data_path_test, "r") as fp:
+        data = json.load(fp)
 
+    X_test = np.array(data["log mel spectrogram"])
+    y_test = np.array(data["labels"])
+    z_test = np.array(data["filenames"])
+
+    return X, y, X_test, y_test, z_test
+
+def prepare_datasets(validation_size):
     # load data
-    X, y, z = load_data(DATA_PATH)
+    X, y, X_test, y_test, z_test = load_data(DATA_PATH_TRAIN_VAL, DATA_PATH_TEST)
 
-    # create the train/test split
-    X_train, X_test, y_train, y_test, z_train, z_test = train_test_split(X, y, z, test_size=test_size)
-    print(len(X_train))
-    print(len(X_test))
-    print(len(y_train))
-    print(len(y_test))
-    print(len(z_train))
-    print(len(z_test))
+    # shuffle test data
+    X_test, y_test, z_test = shuffle(X_test, y_test, z_test, random_state=2)
 
     # create the train/validation split
-    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
-    print()
-    print(len(X_train))
-    print(len(X_validation))
-    print(len(y_train))
-    print(len(y_validation))
+    X_train, X_validation, y_train, y_validation = train_test_split(X, y, test_size=validation_size, random_state=2)
+
 
     # TF expects a 3D array -> (# time bins, # mel bands, # colours)
-    X_train = X_train[..., np.newaxis] # 4D array -> (# segments, # time bins, # mel bands, # colours)
+    X_train = X_train[..., np.newaxis] # 4D array -> (# samples, # time bins, # mel bands, # colours)
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
 
-    return X_train, X_validation, X_test, y_train, y_validation, y_test, z_train, z_test
+
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, z_test
 
 def build_model(input_shape):
 
@@ -99,20 +98,20 @@ def predict(model, X, y, z):
 
 if __name__ == "__main__":
     # create training, validation and test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test, z_train, z_test = prepare_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, z_test = prepare_datasets(0.2)
 
     # build the CNN
     input_shape = (X_train.shape[1], X_train.shape[2], X_train.shape[3])
     model = build_model(input_shape)
 
     # compile the network
-    optimizer = keras.optimizers.Adam(learning_rate=0.0001)
+    optimizer = keras.optimizers.Adam(learning_rate=0.001)
     model.compile(optimizer=optimizer,
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
     # train the CNN
-    model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=30)
+    model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=10)
 
     # evaluate the CNN on the test set
     test_error, test_accuracy = model.evaluate(X_test, y_test, verbose=1)
