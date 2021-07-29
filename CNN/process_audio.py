@@ -6,13 +6,13 @@ import math
 # import librosa, librosa.display
 
 
-DATASET_PATH = "Hold-out_warblr_114/train_val"
+DATASET_PATH = "Hold-out_warblr_1140/test"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "hold-out_warblr_train_val_114_32mels_filenames.json"
+JSON_PATH = "hold-out_warblr_test.json"
 
-def save_log_mel_spectrogram(dataset_path, json_path, n_mels=32, n_fft=2048, hop_length=512, num_segments=5):
+def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, hop_length=512, num_segments=1):
 
     # dictionary to store data
     data = {
