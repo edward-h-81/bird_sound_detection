@@ -2,15 +2,17 @@ import json
 import os
 import librosa
 import math
-# import matplotlib.pyplot as plt
-# import librosa, librosa.display
+import matplotlib.pyplot as plt
+import librosa, librosa.display
+import nlpaug.augmenter.spectrogram as nas
+import nlpaug.flow as naf
 
 
-DATASET_PATH = "Hold-out_warblr_1140/test"
+DATASET_PATH = "Hold-out_warblr_1140/train_val"
 SAMPLE_RATE = 22050
 DURATION = 10
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
-JSON_PATH = "hold-out_warblr_test.json"
+JSON_PATH = "hold-out_vanilla_aug_combi.json"
 
 def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, hop_length=512, num_segments=1):
 
@@ -70,6 +72,29 @@ def save_log_mel_spectrogram(dataset_path, json_path, n_mels=128, n_fft=2048, ho
                     # store log mel spectrogram for segment if it has the expected length
                     if len(log_mel_spectrogram) == expected_num_log_mel_spectrogram_vectors_per_segment:
                         data["log mel spectrogram"].append(log_mel_spectrogram.tolist())
+                        data["labels"].append(i-1) # -1 as the first iteration was for the dataset path
+                        data["filenames"].append(f)
+                        print("{}, segment:{}".format(file_path, s+1))
+
+                    log_mel_spectrogram = log_mel_spectrogram.T
+
+                    flow = naf.Sequential([
+                        nas.FrequencyMaskingAug(zone=(0, 3.667), coverage=1., factor=(11, 33)),
+                        nas.TimeMaskingAug(zone=(0, 3.667), coverage=0.1),
+                    ])
+                    aug_data = flow.augment(log_mel_spectrogram)
+
+                    # librosa.display.specshow(aug_data,
+                    #                          x_axis="time",
+                    #                          y_axis="mel",
+                    #                          sr=sr, cmap='gray_r')  # cmap='gray' OR cmap='gray_r' - add for grayscale
+                    # plt.colorbar(format="%+2.f dB")
+                    # plt.show()
+
+                    aug_data = aug_data.T
+
+                    if len(aug_data) == expected_num_log_mel_spectrogram_vectors_per_segment:
+                        data["log mel spectrogram"].append(aug_data.tolist())
                         data["labels"].append(i-1) # -1 as the first iteration was for the dataset path
                         data["filenames"].append(f)
                         print("{}, segment:{}".format(file_path, s+1))
