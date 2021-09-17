@@ -31,7 +31,7 @@ class DCASE_Dataset(Dataset):
   def __getitem__(self, index):
     audio_sample_path = self._get_audio_sample_path(index)
     label = self._get_audio_sample_label(index)
-    signal, sr = torchaudio.load(audio_sample_path) 
+    signal, sr = torchaudio.load(audio_sample_path, normalize=True) 
     signal = signal.to(self.device)
     signal = self._resample_if_necessary(signal, sr)
     signal = self._mix_down_if_necessary(signal)
@@ -68,7 +68,7 @@ class DCASE_Dataset(Dataset):
   def _add_background_noise(self, signal):
 
     bird = signal
-    noise, sr = torchaudio.load('/content/drive/My Drive/torchaudio/warblr_nobird.wav')
+    noise, sr = torchaudio.load('/content/drive/My Drive/MSc_Project_Colab/pink_noise.aiff', normalize=True)
     noise = noise.to(self.device)
     noise = self._resample_if_necessary(noise, sr)
     noise = self._mix_down_if_necessary(noise)
@@ -82,10 +82,10 @@ class DCASE_Dataset(Dataset):
     bird_power = bird.norm(p=2)
     noise_power = noise.norm(p=2)
 
-    for snr_db in [20, 10, 3]:
-      snr = math.exp(snr_db / 10)
-      scale = snr * noise_power / bird_power
-      noisy_bird = (scale * bird + noise) / 2
+    snr_db = 10
+    snr = math.exp(snr_db / 10)
+    scale = snr * noise_power / bird_power
+    noisy_bird = (scale * bird + noise) / 2
 
       # plot_waveform(noisy_bird.cpu(), self.target_sample_rate, title=f"SNR: {snr_db} [dB]")
       # plot_specgram(noisy_bird.cpu(), self.target_sample_rate, title=f"SNR: {snr_db} [dB]")
